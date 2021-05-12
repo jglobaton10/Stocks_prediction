@@ -7,6 +7,9 @@ Original file is located at
     https://colab.research.google.com/drive/1Y3fQf7uG4nfIq6Yy3QyN_W_HmS3Kpgq2
 """
 
+
+
+
 import requests
 import pandas as pd 
 import time
@@ -84,13 +87,16 @@ for name in selections_for_prediction:
   dates_predicted = [close_price_test.index[i+1] for i in range(previous_data, len(close_price_test.index), previous_data)]#.............................issue
 
   #print(predictions)
-  #plt.style.use('dark_background')
-  #plt.figure(figsize= (30,10))
-  #plt.plot( dates_predicted, predictions, '--*', c = '#3355FF', label = 'Predictions')
-  #plt.plot( dates_predicted, y_test,'--*r', label = 'Real Values')
-  #plt.title(name + ' Stocks - Close Prices')
-  #plt.legend()
-  #plt.show()
+  """
+
+  plt.style.use('dark_background')
+  plt.figure(figsize= (30,10))
+  plt.plot( dates_predicted, predictions, '--*', c = '#3355FF', label = 'Predictions')
+  plt.plot( dates_predicted, y_test,'--*r', label = 'Real Values')
+  plt.title(name + ' Stocks - Close Prices')
+  plt.legend()
+  plt.show()
+ """
  
   # Mean squared error 
   print( scaler.inverse_transform(          [[  np.mean((predictions - y_test)**2)    ]]     )[0][0])
@@ -105,3 +111,86 @@ previous_date= pd.Timestamp.to_pydatetime(dates_predicted[len(dates_predicted)-1
 
 results_prediction = pd.DataFrame(np.array(predictions_to_show)[:,0].reshape(1,2), columns=selections_for_prediction , index = [ predictions_date ] )
 results_previous   = pd.DataFrame(np.array(previous_day_data).reshape(1,2), columns=selections_for_prediction , index = [ previous_date ] )
+
+
+
+from flask import Flask, request, jsonify
+from flask_marshmallow import Marshmallow
+from flask_restful import Resource, Api
+
+app = Flask(__name__)
+api = Api(app)
+ma = Marshmallow(app)
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ('results_prediction',)
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=False)
+import json
+class UserManager(Resource):
+    pass
+    @staticmethod
+    def get():
+        respuesta = None
+        try:
+            #id_activity = int(request.args['id'])
+
+            #final = recomendar(id_activity)
+            result = results_prediction.to_json()
+            parsed = json.loads(result)
+            json.dumps(parsed, indent=4)
+            respuesta = parsed
+
+        except Exception as _:
+            respuesta  = None
+
+        return   respuesta  #jsonify(user_schema.dump(final))
+
+api.add_resource(UserManager, '/api/predictions')
+if __name__ == '__main__':
+        app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
