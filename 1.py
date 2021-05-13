@@ -39,80 +39,75 @@ def data_preparation_step(data, scaler, previous_data , mode):
 
 
 selections_for_prediction = [ 'AMZN','GOOGL']
-start_date = date.today()   
+
+def generate_predictions(selections_for_prediction):
+    start_date = date.today()   
 
 #selections_for_prediction_info = selections_for_prediction_info.dropna()
 
-previous_data = 20
+    previous_data = 20
 
-predictions_to_show = [] 
-previous_day_data = []
+    predictions_to_show = [] 
+    previous_day_data = []
 
-for name in selections_for_prediction:
-
-  selections_for_prediction_info = yf.download( name , group_by = 'column', end=start_date.strftime('%Y-%m-%d'), 
-                                  start= (start_date - timedelta(days=10000)).strftime('%Y-%m-%d'), period = '1d')
-  #print(selections_for_prediction_info)
-  train,test = train_test_split(selections_for_prediction_info,test_size = 0.2, random_state = 43, shuffle = False)
-  close_price_train = pd.DataFrame(train.Close)
-  close_price_test = pd.DataFrame(test.Close)
-
-  #stocks_name = close_price_train.columns
-  scaler = MinMaxScaler(feature_range=(0,1))
-
-  X_train, y_train = data_preparation_step(close_price_train, scaler, previous_data, 0)
-
-  # Train 
-  model_close = Sequential()
-                                                                     # N° of columns in each set   
-  model_close.add(LSTM(units= 50, return_sequences=True, input_shape=(X_train.shape[1], 1 )))
-  model_close.add(LSTM(units= 50, return_sequences=True))
-  model_close.add(Dropout(rate = 0.05))
-  model_close.add(LSTM(units= 50, return_sequences=True))
-  model_close.add(Dropout(rate = 0.2))
-  model_close.add(LSTM(units= 34))
-  model_close.add(Dense(units = 1))
-  model_close.compile(optimizer = 'adam', loss = 'mean_squared_error')
+    for name in selections_for_prediction:
+        print(name)
+        selections_for_prediction_info = yf.download( name , group_by = 'column', end=start_date.strftime('%Y-%m-%d'), start= (start_date - timedelta(days=10000)).strftime('%Y-%m-%d'), period = '1d')
+        #print(selections_for_prediction_info)
+        
+        train,test = train_test_split(selections_for_prediction_info,test_size = 0.2, random_state = 43, shuffle = False)
+        
+        close_price_train = pd.DataFrame(train.Close)
+        close_price_test = pd.DataFrame(test.Close)
+        #stocks_name = close_price_train.columns
+        scaler = MinMaxScaler(feature_range=(0,1))
+        X_train, y_train = data_preparation_step(close_price_train, scaler, previous_data, 0)
+        # Train 
+        model_close = Sequential()
+        # N° of columns in each set   
+        model_close.add(LSTM(units= 50, return_sequences=True, input_shape=(X_train.shape[1], 1 )))
+        model_close.add(LSTM(units= 50, return_sequences=True))
+        model_close.add(Dropout(rate = 0.05))
+        model_close.add(LSTM(units= 50, return_sequences=True))
+        model_close.add(Dropout(rate = 0.2))
+        model_close.add(LSTM(units= 34))
+        model_close.add(Dense(units = 1))
+        model_close.compile(optimizer = 'adam', loss = 'mean_squared_error')
                   ## The number of rows need to match
-  history = model_close.fit(X_train, y_train, epochs=6, batch_size=32, verbose = 0)
-  #plt.figure(figsize=(30,10) ) #...............................................................................................
-  #plt.plot(history.history['loss' ])
-  # Test
-  X_test, y_test = data_preparation_step(close_price_test, scaler, previous_data, 0)
-  
-  
-  predictions = model_close.predict(X_test)
-  
-  # Indexes for the graph  
-  dates_predicted = [close_price_test.index[i+1] for i in range(previous_data, len(close_price_test.index), previous_data)]#.............................issue
+        history = model_close.fit(X_train, y_train, epochs=6, batch_size=32, verbose = 0)
+        #plt.figure(figsize=(30,10) ) #...............................................................................................
+        #plt.plot(history.history['loss' ])
+        # Test
+        X_test, y_test = data_preparation_step(close_price_test, scaler, previous_data, 0)
+        predictions = model_close.predict(X_test)
+        # Indexes for the graph  
+        dates_predicted = [close_price_test.index[i+1] for i in range(previous_data, len(close_price_test.index), previous_data)]#.............................issue
+       #print(predictions)
+        """
+        plt.style.use('dark_background')
+        plt.figure(figsize= (30,10))
+        plt.plot( dates_predicted, predictions, '--*', c = '#3355FF', label = 'Predictions')
+        plt.plot( dates_predicted, y_test,'--*r', label = 'Real Values')
+        plt.title(name + ' Stocks - Close Prices')
+        plt.legend()
+        plt.show()
+        """
+        # Mean squared error 
+        #print( scaler.inverse_transform(          [[  np.mean((predictions - y_test)**2)    ]]     )[0][0])
+        previous_day_data.append(   close_price_test.Close.loc[dates_predicted[len(dates_predicted)-1]])
+        predictions_to_show.append(   scaler.inverse_transform( [predictions[len(predictions) -1]] ).reshape(-1,1))
 
-  #print(predictions)
-  """
+    predictions_date = pd.Timestamp.to_pydatetime(dates_predicted[len(dates_predicted)-1] +  timedelta(days=1)).strftime('%Y-%m-%d')
+    previous_date= pd.Timestamp.to_pydatetime(dates_predicted[len(dates_predicted)-1]).strftime('%Y-%m-%d')
 
-  plt.style.use('dark_background')
-  plt.figure(figsize= (30,10))
-  plt.plot( dates_predicted, predictions, '--*', c = '#3355FF', label = 'Predictions')
-  plt.plot( dates_predicted, y_test,'--*r', label = 'Real Values')
-  plt.title(name + ' Stocks - Close Prices')
-  plt.legend()
-  plt.show()
- """
- 
-  # Mean squared error 
-  print( scaler.inverse_transform(          [[  np.mean((predictions - y_test)**2)    ]]     )[0][0])
-   
-  previous_day_data.append(   close_price_test.Close.loc[dates_predicted[len(dates_predicted)-1]])
-  predictions_to_show.append(   scaler.inverse_transform( [predictions[len(predictions) -1]] ).reshape(-1,1))
-
-
-predictions_date = pd.Timestamp.to_pydatetime(dates_predicted[len(dates_predicted)-1] +  timedelta(days=1)).strftime('%Y-%m-%d')
-previous_date= pd.Timestamp.to_pydatetime(dates_predicted[len(dates_predicted)-1]).strftime('%Y-%m-%d')
+    #print(predictions_to_show)
+    results_prediction = pd.DataFrame(np.array(predictions_to_show)[:,0].reshape(1,len(predictions_to_show)), columns=selections_for_prediction , index = [ predictions_date ] )
+    results_previous   = pd.DataFrame(np.array(previous_day_data).reshape(1,len(predictions_to_show)), columns=selections_for_prediction , index = [ previous_date ] )
+    #print(results_prediction)
+    return results_prediction
 
 
-results_prediction = pd.DataFrame(np.array(predictions_to_show)[:,0].reshape(1,2), columns=selections_for_prediction , index = [ predictions_date ] )
-results_previous   = pd.DataFrame(np.array(previous_day_data).reshape(1,2), columns=selections_for_prediction , index = [ previous_date ] )
-
-
+#print(generate_predictions(selections_for_prediction).to_json())
 
 from flask import Flask, request, jsonify
 from flask_marshmallow import Marshmallow
@@ -130,30 +125,29 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=False)
 import json
 class UserManager(Resource):
+    
     pass
     @staticmethod
     def get():
         respuesta = None
         try:
-            #id_activity = int(request.args['id'])
-
+            companies = str(request.args['companies']).split()
+            print(companies)
             #final = recomendar(id_activity)
-            result = results_prediction.to_json()
+            result = generate_predictions(companies).to_json()
             parsed = json.loads(result)
             json.dumps(parsed, indent=4)
             respuesta = parsed
 
-        except Exception as _:
-            respuesta  = None
+        except Exception as e:
+            print(e)
+            
 
         return   respuesta  #jsonify(user_schema.dump(final))
 
 api.add_resource(UserManager, '/api/predictions')
 if __name__ == '__main__':
-        app.run(debug=True)
-
-
-
+        app.run(debug=False)
 
 
 
