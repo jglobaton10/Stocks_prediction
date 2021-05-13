@@ -45,7 +45,7 @@ def generate_predictions(selections_for_prediction):
 
 #selections_for_prediction_info = selections_for_prediction_info.dropna()
 
-    previous_data = 20
+    previous_data = 60
 
     predictions_to_show = [] 
     previous_day_data = []
@@ -104,10 +104,13 @@ def generate_predictions(selections_for_prediction):
     results_prediction = pd.DataFrame(np.array(predictions_to_show)[:,0].reshape(1,len(predictions_to_show)), columns=selections_for_prediction , index = [ predictions_date ] )
     results_previous   = pd.DataFrame(np.array(previous_day_data).reshape(1,len(predictions_to_show)), columns=selections_for_prediction , index = [ previous_date ] )
     #print(results_prediction)
-    return results_prediction
+    return (results_prediction , results_previous)
 
 
 #print(generate_predictions(selections_for_prediction).to_json())
+
+Data_predicted = {}
+
 
 from flask import Flask, request, jsonify
 from flask_marshmallow import Marshmallow
@@ -126,24 +129,35 @@ users_schema = UserSchema(many=False)
 import json
 class UserManager(Resource):
     
+    
     pass
     @staticmethod
     def get():
+        results_to_show = {}
         respuesta = None
         try:
-            companies = str(request.args['companies']).split()
-            print(companies)
+            companies = str(request.args['companies']).split()         
+            #for company in companies:
+            #print(companies)
             #final = recomendar(id_activity)
-            result = generate_predictions(companies).to_json()
-            parsed = json.loads(result)
-            json.dumps(parsed, indent=4)
-            respuesta = parsed
+            solution = generate_predictions(companies)
+            
+            for i,tupla in enumerate(solution):
+                
+                result = tupla.to_json(orient = 'index')
+                parsed = json.loads(result)
+                json.dumps(parsed, indent=4)
+                respuesta = parsed
+                
+                results_to_show[i] = respuesta
+                
+           
 
         except Exception as e:
             print(e)
             
 
-        return   respuesta  #jsonify(user_schema.dump(final))
+        return   results_to_show  #jsonify(user_schema.dump(final))
 
 api.add_resource(UserManager, '/api/predictions')
 if __name__ == '__main__':
