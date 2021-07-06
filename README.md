@@ -28,5 +28,7 @@ Aditionally the web app can accessed in this [Link](). In this case the app will
 - flask-marshmallow 
 
 ## Images of the app 
-![image](https://user-images.githubusercontent.com/47225250/124650350-a23f7e80-de67-11eb-9227-74da276a5237.png)
-![image](https://user-images.githubusercontent.com/47225250/124650452-c3a06a80-de67-11eb-97dd-8607192162ca.png)
+![image](![image](https://user-images.githubusercontent.com/47225250/124680010-85b93b80-de93-11eb-943d-efffed53f408.png)
+)
+![image](![image](https://user-images.githubusercontent.com/47225250/124680040-923d9400-de93-11eb-82ce-9e81f29bac17.png)
+)
