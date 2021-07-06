@@ -30,5 +30,5 @@ Aditionally the web app can accessed in this [Link](). In this case the app will
 ## Images of the app 
 ![image](https://github.com/jglobaton10/Stocks_prediction/blob/main/streamlit_app-%C2%B7-Streamlit-Google-Chrome-2021-07-06-19-32-27.gif)
 
-![image](https://user-images.githubusercontent.com/47225250/124680040-923d9400-de93-11eb-82ce-9e81f29bac17.png)
+![image](https://github.com/jglobaton10/Stocks_prediction/blob/main/streamlit_app-%C2%B7-Streamlit-Google-Chrome-2021-07-06-19-33-23.gif)
 
