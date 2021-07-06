@@ -15,7 +15,7 @@ The scripts can be executed locally:
 
 **Requires Python 3.9.5**
 
-Aditionally the web app can accessed in this [Lin](). In this case the app will be running on a EC2 instance of **AWS**.
+Aditionally the web app can accessed in this [Link](). In this case the app will be running on a EC2 instance of **AWS**.
 
 ## Dependencies 
 - yfinance
@@ -28,3 +28,5 @@ Aditionally the web app can accessed in this [Lin](). In this case the app will 
 - flask-marshmallow 
 
 ## Images of the app 
+![image](https://user-images.githubusercontent.com/47225250/124650350-a23f7e80-de67-11eb-9227-74da276a5237.png)
+![image](https://user-images.githubusercontent.com/47225250/124650452-c3a06a80-de67-11eb-97dd-8607192162ca.png)
